@@ -9,7 +9,7 @@ from flask import Flask, render_template_string, request
 app = Flask(__name__)
 
 TEMPLATE_PATH = "template/kind-custom.yaml"
-GENERATED_PATH = "genereate/"
+GENERATED_PATH = "generate/"
 
 html_template = """
 <!DOCTYPE html>
@@ -129,8 +129,10 @@ def start_lab():
 
     with open(TEMPLATE_PATH, "r") as f:
         docs = list(yaml.safe_load_all(f))
-
+        
+        
     for doc in docs:
+        # print("DOC !! ", doc["kind"])
         if doc["kind"] == "Pod":
             doc["metadata"]["name"] = pod_name
             doc["metadata"]["namespace"] = namespace

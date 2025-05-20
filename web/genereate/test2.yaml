@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: kind-host-test2
+  name: kind-host-test2
+  namespace: cvpcp-test2
+spec:
+  containers:
+  - image: bodlehg/kind-runtime:test
+    imagePullPolicy: Always
+    name: kind-runtime
+    ports:
+    - containerPort: 7681
+    resources:
+      limits:
+        cpu: '20'
+        memory: 20Gi
+      requests:
+        cpu: '4'
+        memory: 2Gi
+    securityContext:
+      capabilities:
+        add:
+        - NET_RAW
+        - NET_ADMIN
+      privileged: true
+    stdin: true
+    tty: true
+    volumeMounts:
+    - mountPath: /var/lib/docker
+      name: docker-storage
+    - mountPath: /sys/fs/cgroup
+      name: cgroup
+  volumes:
+  - emptyDir: {}
+    name: docker-storage
+  - hostPath:
+      path: /sys/fs/cgroup
+    name: cgroup
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kind-terminal-svc-test2
+  namespace: cvpcp-test2
+spec:
+  ports:
+  - name: ttyd
+    nodePort: 20418
+    port: 7681
+    targetPort: 7681
+  selector:
+    app: kind-host-test2
+  type: NodePort
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kind-runtime-rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: cvpcp-test2
